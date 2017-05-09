@@ -25,3 +25,7 @@ cd elasticsearch-5.4.0/
 
 
 !!!!如果没有安装java环境就不能运行
+
+yum -y list java*
+yum install java-1.8.0-openjdk.x86_64 -y
+yum install java-1.8.0-openjdk-devel -y
