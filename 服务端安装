@@ -23,6 +23,29 @@ tar -xzf elasticsearch-5.4.0.tar.gz
 cd elasticsearch-5.4.0/
 ./bin/elasticsearch
 
+！！！！默认是9200端口
+
+测试
+curl -i -XGET 'localhost:9200/'  会得到下面的结果
+HTTP/1.1 200 OK
+content-type: application/json; charset=UTF-8
+content-length: 327
+
+{
+  "name" : "ROFv0DU",
+  "cluster_name" : "elasticsearch",
+  "cluster_uuid" : "mZ9sYEbxSai9xKg5e9C4_w",
+  "version" : {
+    "number" : "5.4.0",
+    "build_hash" : "780f8c4",
+    "build_date" : "2017-04-28T17:43:27.229Z",
+    "build_snapshot" : false,
+    "lucene_version" : "6.5.0"
+  },
+  "tagline" : "You Know, for Search"
+}
+
+
 
 !!!!如果没有安装java环境就不能运行
 
