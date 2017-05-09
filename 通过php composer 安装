@@ -1,0 +1,19 @@
+1 安装composer
+https://github.com/generalbao/PHP/blob/master/composer
+
+
+2 新建composer.json
+{
+ "require": {
+        "elasticsearch/elasticsearch": "~5.0"
+    }
+}
+
+composer install
+
+
+2 测试
+
+require 'vendor/autoload.php';
+
+$client = Elasticsearch\ClientBuilder::create()->build();
