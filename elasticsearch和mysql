@@ -1,0 +1,42 @@
+elasticsearch-jdbc
+下载地址 https://github.com/jprante/elasticsearch-jdbc
+
+
+新建 userdetail.sh
+#!/bin/sh
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+bin=${DIR}/../bin
+lib=${DIR}/../lib
+
+echo '
+{
+    "type" : "jdbc",
+    "jdbc" : {
+        "url" : "jdbc:mysql://localhost:3306/elasticsearch",
+        "statefile" : "statefile.json",
+        "schedule" : "0 0-59 0-23 ? * *",
+        "user" : "root",
+        "password" : "123456",
+        "sql" : "select * from user_detail",
+        "index" : "elasticsearch",
+        "type" : "mytype",
+        "metrics": {
+            "enabled" : true
+        },
+        "elasticsearch" : {
+             "host" : "localhost",
+             "port" : 9301
+        }
+    }
+    }
+
+' | java \
+    -cp "${lib}/*" \
+    -Dlog4j.configurationFile=${bin}/log4j2.xml \
+    org.xbib.tools.Runner \
+   org.xbib.tools.JDBCImporter
+
+
+然后运行 userdetail.sh
+就可以创建 elasticsearch的索引 mytype的type 以 elasticsearch数据库中的user_detail表作为数据源
