@@ -1,0 +1,32 @@
+2017年5月22日18:14:00
+
+# ======================== Elasticsearch Configuration =========================
+!!!!!!!!  最重要的配置 cluster.name一样 然后 node.name不一样
+cluster.name: myapp
+node.name: node128         //另外的是 node129 node130
+node.master: true
+node.data: false
+
+#数据和日志存放位置
+# path.data: /path/to/data
+#
+# Path to log files:
+#
+# path.logs: /path/to/logs
+
+//是否锁定内存 如果内存不够 使用swap分区 es会变得很慢
+bootstrap.mlockall : true
+
+http.port : 9200 
+transport.tcp.port : 9300        //节点互相访问的端口 另外的是 19300 29300 不能一样 
+
+index.number_of_shards: 5        //主要节点
+index.number_of_replicas: 1        //复制
+
+//集群广播
+discovery.zen.ping.unicast.hosts: ["192.168.28.128:9300","192.168.28.129:19300","192.168.28.130:29300"]
+discovery.zen.ping.multicast.enabled: false
+discovery.zen.minimum_master_nodes: 2
+
+！！！！！！！ 集群之前的端口要开放，不然不能访问  报错---No route to host
+还有 如果你安装了elasticsearch-head插件，最后全部集群都安装
