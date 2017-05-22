@@ -1,0 +1,8 @@
+elasticsearch-head是一个elasticsearch的集群管理工具，它是完全由HTML5编写的独立网页程序，你可以通过插件把它集成到es
+
+
+插件安装方法：
+切换到 elasticsearch/bin目录
+1. ./plugin install mobz/elasticsearch-head             //我的es 是2.3.4 所有 install 前不用加 -
+2. 运行es
+3. 打开http://localhost:9200/_plugin/head/
