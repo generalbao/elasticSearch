@@ -16,11 +16,17 @@ curl -XDELETE 'localhost:9200/myindex2/mytype/1?pretty'
 
 
 3 改
-curl -XPUT 'localhost:9200/website/blog/123?pretty'  -d'
+curl -XPUT 'localhost:9200/myindex2/mytype/123?pretty'  -d'
 {
   {"name":"b","age":"200"}
 }
 '
+
+添加字段
+curl -XPUT 'localhost:9200/myindex2/mytype/123/_update'  -d'
+{"doc":{"money":"100","address":"gz"}}
+'
+alter table myindex2.mytype add money 100,address gz
  返回的结果中 "_version" : 2,
 
 4 查
