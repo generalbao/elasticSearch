@@ -1,0 +1,29 @@
+2017年5月23日19:20:55
+
+通过centos的curl
+
+1 增
+//id自动生成
+curl XPOST localhost:9200/myindex2/mytype?pretty -d '{"name":"b","age":"20"}'
+// 相当于 insert into myindex2.mytype('name','age') values('b',20')
+
+//自定义id
+curl XPUT localhost:9200/myindex2/mytype/1?pretty -d '{"name":"b","age":"20"}'
+// 相当于 insert into myindex2.mytype('id','name','age') values(1,'b',20')
+
+2 删
+curl -XDELETE 'localhost:9200/myindex2/mytype/1?pretty'
+
+
+3 改
+curl -XPUT 'localhost:9200/website/blog/123?pretty'  -d'
+{
+  {"name":"b","age":"200"}
+}
+'
+ 返回的结果中 "_version" : 2,
+
+4 查
+curl  localhost:9200/myindex2/mytype/1?pretty     
+// select * from myindex2.mytype where id=1
+
