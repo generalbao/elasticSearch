@@ -33,3 +33,22 @@ alter table myindex2.mytype add money 100,address gz
 curl  localhost:9200/myindex2/mytype/1?pretty     
 // select * from myindex2.mytype where id=1
 
+查询多条数据
+curl  'localhost:9200/_mget?pretty' -H 'Content-Type: application/json' -d'
+{
+   "docs" : [
+      {
+         "_index" : "myindex2",
+         "_type" :  "mtype",
+         "_id" : 1
+      },
+      {
+        "_index" : "myindex2",
+         "_type" :  "mtype",
+         "_id" : 2,
+         "_source": "age"         //返回那些字段
+      }
+   ]
+}
+'
+
