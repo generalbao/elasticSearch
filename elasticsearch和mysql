@@ -73,7 +73,8 @@ echo '
 },
         "elasticsearch" : {
              "host" : "192.168.28.128",
-             "port" : 9300 
+             "port" : 9300,
+             'cluster' : 'myapp'                   //默认是elasticsearch
               }   
     }
 }
@@ -84,4 +85,5 @@ echo '
     org.xbib.tools.JDBCImporter
 
 
-
+!!!!!! 数据可以添加但是一直更新不了  通过查看日志 报错 noalivenodes
+原来是 elasticsearch-jdbc 默认的cluster是 elasticsearch 而我的cluster 是 myapp!!!!
