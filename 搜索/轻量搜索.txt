@@ -1,0 +1,24 @@
+所谓轻量 我的理解就是更具体搜索
+
+select * from xxx where name liek john and tweent like mary
++name:john +tweet:mary    
+curl -XGET 'localhost:9200/_search?q=%2Bname%3Ajohn+%2Btweet%3Amary&pretty'
+
++ 前缀表示必须与查询条件匹配。类似地， - 前缀表示一定不与查询条件匹配。没有 + 或者 - 的所有其他条件都是可选的——匹配的越多，文档就越相关。
+
+
+_all字段
+这个简单搜索返回包含 mary 的所有文档：
+
+GET /_search?q=mary
+
+更复杂的查询编辑
+下面的查询针对tweents类型，并使用以下的条件：
+
+name 字段中包含 mary 或者 john
+date 值大于 2014-09-10
+_all_ 字段包含 aggregations 或者 geo
++name:(mary john) +date:>2014-09-10 +(aggregations geo)
+
+
+
