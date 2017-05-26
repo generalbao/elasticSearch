@@ -1,0 +1,280 @@
+内置分析器
+Elasticsearch还附带了可以直接使用的预包装的分析器。 接下来我们会列出最重要的分析器。为了证明它们的差异，我们看看每个分析器会从下面的字符串得到哪些词条：
+
+"Set the shape to semi-transparent by calling set_trans(5)"
+标准分析器
+标准分析器是Elasticsearch默认使用的分析器。它是分析各种语言文本最常用的选择。它根据 Unicode 联盟 定义的 单词边界 划分文本。删除绝大部分标点。最后，将词条小写。它会产生
+
+set, the, shape, to, semi, transparent, by, calling, set_trans, 5
+简单分析器
+简单分析器在任何不是字母的地方分隔文本，将词条小写。它会产生
+
+set, the, shape, to, semi, transparent, by, calling, set, trans
+空格分析器
+空格分析器在空格的地方划分文本。它会产生
+
+Set, the, shape, to, semi-transparent, by, calling, set_trans(5)
+语言分析器
+特定语言分析器可用于 很多语言。它们可以考虑指定语言的特点。例如， 英语 分析器附带了一组英语无用词（常用单词，例如 and 或者 the ，它们对相关性没有多少影响），它们会被删除。 由于理解英语语法的规则，这个分词器可以提取英语单词的 词干 。
+
+英语 分词器会产生下面的词条：
+
+set, shape, semi, transpar, call, set_tran, 5
+注意看 transparent`、 `calling 和 set_trans 已经变为词根格式。
+
+什么时候使用分析器
+当我们 索引 一个文档，它的全文域被分析成词条以用来创建倒排索引。 但是，当我们在全文域 搜索 的时候，我们需要将查询字符串通过 相同的分析过程 ，以保证我们搜索的词条格式与索引中的词条格式一致。
+
+
+当你查询一个 精确值 域时，不会分析查询字符串， 而是搜索你指定的精确值。
+
+
+测试分析器
+在消息体里，指定分析器和要分析的文本：
+
+GET /_analyze
+{
+  "analyzer": "standard",
+  "text": "Text to analyze"
+}
+拷贝为 CURL在 SENSE 中查看 
+结果中每个元素代表一个单独的词条：
+
+{
+   "tokens": [
+      {
+         "token":        "text",
+         "start_offset": 0,
+         "end_offset":   4,
+         "type":         "<ALPHANUM>",
+         "position":     1
+      },
+      {
+         "token":        "to",
+         "start_offset": 5,
+         "end_offset":   7,
+         "type":         "<ALPHANUM>",
+         "position":     2
+      },
+      {
+         "token":        "analyze",
+         "start_offset": 8,
+         "end_offset":   15,
+         "type":         "<ALPHANUM>",
+         "position":     3
+      }
+   ]
+}
+token 是实际存储到索引中的词条。 position 指明词条在原始文本中出现的位置。 start_offset 和 end_offset 指明字符在原始字符串中的位置。
+
+提示
+每个分析器的 type 值都不一样，可以忽略它们。它们在Elasticsearch中的唯一作用在于keep_types token 过滤器。
+
+analyze API 是一个有用的工具，它有助于我们理解Elasticsearch索引内部发生了什么，随着深入，我们会进一步讨论它。
+
+指定分析器编辑
+当Elasticsearch在你的文档中检测到一个新的字符串域 ，它会自动设置其为一个全文 字符串 域，使用 标准 分析器对它进行分析。
+
+你不希望总是这样。可能你想使用一个不同的分析器，适用于你的数据使用的语言。有时候你想要一个字符串域就是一个字符串域--不使用分析，直接索引你传入的精确值，例如用户ID或者一个内部的状态域或标签。
+
+要做到这一点，我们必须手动指定这些域的映射。
+
+核心简单域类型编辑
+Elasticsearch 支持 如下简单域类型：
+
+字符串: string
+整数 : byte, short, integer, long
+浮点数: float, double
+布尔型: boolean
+日期: date
+
+看映射编辑
+通过 /_mapping ，我们可以查看 Elasticsearch 在一个或多个索引中的一个或多个类型的映射 。在 开始章节 ，我们已经取得索引 myindex 中类型 test 的映射：
+
+curl http://localhost:9200/myindex/_mapping/test?pretty
+{
+  "myindex" : {
+    "mappings" : {
+      "test" : {
+        "properties" : {
+          "access_token" : {
+            "type" : "string"
+          },
+          "area" : {
+            "type" : "string"
+          },
+          "change_name" : {
+            "type" : "string"
+          },
+          "id" : {
+            "type" : "long"
+          },
+          "nickname" : {
+            "type" : "string"
+          },
+          "openid" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "phone" : {
+            "type" : "string"
+          },
+          "quhao" : {
+            "type" : "string"
+          },
+          "time" : {
+            "type" : "string"
+          },
+          "token" : {
+            "type" : "string"
+          },
+          "touxiang" : {
+            "type" : "string"
+          },
+          "type" : {
+            "type" : "string"
+          },
+          "verify_code" : {
+            "type" : "long"
+          }
+        }
+      }
+    }
+  }
+}
+
+
+自定义域映射
+尽管在很多情况下基本域数据类型 已经够用，但你经常需要为单独域自定义映射 ，特别是字符串域。自定义映射允许你执行下面的操作：
+
+全文字符串域和精确值字符串域的区别
+使用特定语言分析器
+优化域以适应部分匹配
+指定自定义数据格式
+还有更多
+域最重要的属性是 type 。对于不是 string 的域，你一般只需要设置 type ：
+
+{
+    "number_of_clicks": {
+        "type": "integer"
+    }
+}
+默认， string 类型域会被认为包含全文。就是说，它们的值在索引前，会通过 一个分析器，针对于这个域的查询在搜索前也会经过一个分析器。
+
+string 域映射的两个最重要 属性是 index 和 analyzer 。
+
+index
+index 属性控制怎样索引字符串。它可以是下面三个值：
+
+analyzed
+首先分析字符串，然后索引它。换句话说，以全文索引这个域。
+not_analyzed
+索引这个域，所以可以搜索到它，但索引指定的精确值。不对它进行分析。
+no
+Don’t index this field at all不索引这个域。这个域不会被搜索到。
+string 域 index 属性默认是 analyzed 。如果我们想映射这个字段为一个精确值，我们需要设置它为 not_analyzed ：
+
+{
+    "tag": {
+        "type":     "string",
+        "index":    "not_analyzed"
+    }
+}
+注意
+其他简单类型（例如 long ， double ， date 等）也接受 index 参数，但有意义的值只有 no 和 not_analyzed ， 因为它们永远不会被分析。
+
+例子1
+
+我们定义了一个string类型的字段 date 值为 "2017-05-26"
+1 index为 analyzed是时候
+无论我们是搜 2017 还是 05 还是 26都可以搜索到
+
+2 index wei not-analyzed时
+搜索2017是没有效果的 只能搜索2017-05-26
+
+例子2
+curl -XPUT 'localhost:9200/myindex3?pretty' -H 'Content-Type: application/json' -d'
+{
+  {"mappings":{
+  "testtype":{
+  "properties":{
+  "name":{
+  "type":"string",
+  "index":"analyzed"         //
+  },
+  "age":{
+  "type":"integer",
+  "index":"not_analyzed"     //
+  },
+  "content":{
+  "type":"string","index":"not_analyzed"}
+  }
+  }
+  }
+  }
+}
+'
+
+// name 是analyze
+curl http://localhost:9200/myindex3/_analyze?pretty -d '{"field":"name","text":"2017-01-01"}
+'
+{
+  "tokens" : [ {
+    "token" : "2017",
+    "start_offset" : 0,
+    "end_offset" : 4,
+    "type" : "<NUM>",
+    "position" : 0
+  }, {
+    "token" : "01",
+    "start_offset" : 5,
+    "end_offset" : 7,
+    "type" : "<NUM>",
+    "position" : 1
+  }, {
+    "token" : "01",
+    "start_offset" : 8,
+    "end_offset" : 10,
+    "type" : "<NUM>",
+    "position" : 2
+  } ]
+}
+
+//因为 content是 not_analyze
+curl http://localhost:9200/myindex3/_analyze?pretty -d '{"field":"content","text":"2017-01-01"}
+'
+{
+  "tokens" : [ {
+    "token" : "2017-01-01",
+    "start_offset" : 0,
+    "end_offset" : 10,
+    "type" : "word",
+    "position" : 0
+  } ]
+}
+
+
+analyzer
+对于 analyzed 字符串域，用 analyzer 属性指定在搜索和索引时使用的分析器。默认， Elasticsearch 使用 standard 分析器， 但你可以指定一个内置的分析器替代它，例如 whitespace 、 simple 和 `english`：
+
+{
+    "tweet": {
+        "type":     "string",
+        "analyzer": "english"
+    }
+}
+
+
+更新映射
+当你首次 创建一个索引的时候，可以指定类型的映射。你也可以使用 /_mapping 为新类型（或者为存在的类型更新映射）增加映射。
+
+注意
+尽管你可以 增加_ 一个存在的映射，你不能 _修改 存在的域映射。如果一个域的映射已经存在，那么该域的数据可能已经被索引。如果你意图修改这个域的映射，索引的数据可能会出错，不能被正常的搜索。
+
+我们可以更新一个映射来添加一个新域，但不能将一个存在的域从 analyzed 改为 not_analyzed 
+
+
+
+
