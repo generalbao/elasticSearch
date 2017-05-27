@@ -1,0 +1,284 @@
+我们的article表是这样的
++----+--------------+------------------------------------------+---------------------+----------+
+| id | title        | content                                  | modifyTime          | type     |
++----+--------------+------------------------------------------+---------------------+----------+
+|  1 | economic one | this is economic xx content haha content | 2017-05-26 19:05:34 | economic |
+|  2 | culture one  | coulture content xx haha                 | 2017-05-26 19:05:40 | culture  |
+|  3 | politic one  | politic content and                      | 2017-05-26 19:30:02 | politic  |
+|  4 | politic 2    | politic 2 haha                           | 2017-05-26 19:28:37 | politic  |
++----+--------------+------------------------------------------+---------------------+----------+
+
+
+通过 elasticsearch-jdbc转换为数据
+
+1 单词搜索 cotent包含 content 前三条都命中
+
+curl http://localhost:9200/article-index/article-type/_search?pretty -d '{
+
+"query" : {
+"match" : {
+"content" : "content"                            
+}
+}
+}'
+{
+  "took" : 17,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 3,
+    "max_score" : 0.16273327,
+    "hits" : [ {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "1",
+      "_score" : 0.16273327,
+      "_source" : {
+        "id" : 1,
+        "title" : "economic one",
+        "content" : "this is economic xx content haha content",
+        "modifyTime" : "2017-05-26T19:05:34.000+08:00",
+        "type" : "economic"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "2",
+      "_score" : 0.15342641,
+      "_source" : {
+        "id" : 2,
+        "title" : "culture one",
+        "content" : "coulture content xx haha",
+        "modifyTime" : "2017-05-26T19:05:40.000+08:00",
+        "type" : "culture"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "3",
+      "_score" : 0.15342641,
+      "_source" : {
+        "id" : 3,
+        "title" : "politic one",
+        "content" : "politic content and",
+        "modifyTime" : "2017-05-26T19:30:02.000+08:00",
+        "type" : "politic"
+      }
+    } ]
+  }
+}
+
+2 多词搜索 content 包含 content或haha(因为默认就是or) 全部命中
+curl http://localhost:9200/article-index/article-type/_search?pretty -d '{
+
+"query" : {
+"match" : {
+"content" : "content haha"
+}
+}
+}'
+{
+  "took" : 16,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 4,
+    "max_score" : 0.581694,
+    "hits" : [ {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "2",
+      "_score" : 0.581694,
+      "_source" : {
+        "id" : 2,
+        "title" : "culture one",
+        "content" : "coulture content xx haha",
+        "modifyTime" : "2017-05-26T19:05:40.000+08:00",
+        "type" : "culture"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "1",
+      "_score" : 0.19643643,
+      "_source" : {
+        "id" : 1,
+        "title" : "economic one",
+        "content" : "this is economic xx content haha content",
+        "modifyTime" : "2017-05-26T19:05:34.000+08:00",
+        "type" : "economic"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "4",
+      "_score" : 0.0759574,
+      "_source" : {
+        "id" : 4,
+        "title" : "politic 2",
+        "content" : "politic 2 haha",
+        "modifyTime" : "2017-05-26T19:28:37.000+08:00",
+        "type" : "politic"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "3",
+      "_score" : 0.02250402,
+      "_source" : {
+        "id" : 3,
+        "title" : "politic one",
+        "content" : "politic content and",
+        "modifyTime" : "2017-05-26T19:30:02.000+08:00",
+        "type" : "politic"
+      }
+    } ]
+  }
+}
+
+
+3 如果我们想搜索 content haha 同时出现 (and)
+
+curl http://localhost:9200/article-index/article-type/_search?pretty -d '{
+"query":{
+  "match":{
+  "content":{
+  "query":"content haha",
+  "operator":"and"
+  }
+  }
+}
+}
+'
+
+curl http://localhost:9200/article-index/article-type/_search?pretty -d '{
+> "query":{
+>   "match":{
+>   "content":{
+>   "query":"content haha",
+>   "operator":"and"
+>   }
+>   }
+> }
+> }
+> '
+{
+  "took" : 24,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 2,
+    "max_score" : 0.581694,
+    "hits" : [ {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "2",
+      "_score" : 0.581694,
+      "_source" : {
+        "id" : 2,
+        "title" : "culture one",
+        "content" : "coulture content xx haha",
+        "modifyTime" : "2017-05-26T19:05:40.000+08:00",
+        "type" : "culture"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "1",
+      "_score" : 0.19643643,
+      "_source" : {
+        "id" : 1,
+        "title" : "economic one",
+        "content" : "this is economic xx content haha content",
+        "modifyTime" : "2017-05-26T19:05:34.000+08:00",
+        "type" : "economic"
+      }
+    } ]
+  }
+}
+
+
+4 控制精度
+在 所有 与 任意 间二选一有点过于非黑即白。 如果用户给定 5 个查询词项，想查找只包含其中 4 个的文档，该如何处理？将 operator 操作符参数设置成 and 只会将此文档排除。
+
+有时候这正是我们期望的，但在全文搜索的大多数应用场景下，我们既想包含那些可能相关的文档，同时又排除那些不太相关的。换句话说，我们想要处于中间某种结果。
+
+match 查询支持 minimum_should_match 最小匹配参数， 这让我们可以指定必须匹配的词项数用来表示一个文档是否相关。我们可以将其设置为某个具体数字，更常用的做法是将其设置为一个百分数，因为我们无法控制用户搜索时输入的单词数量：
+
+GET /my_index/my_type/_search
+{
+  "query": {
+    "match": {
+      "content": {
+        "query":                "content haha and",
+        "minimum_should_match": "75%"
+      }
+    }
+  }
+}
+
+
+{
+  "took" : 20,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 3,
+    "max_score" : 0.21961421,
+    "hits" : [ {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "2",
+      "_score" : 0.21961421,
+      "_source" : {
+        "id" : 2,
+        "title" : "culture one",
+        "content" : "coulture content xx haha",
+        "modifyTime" : "2017-05-26T19:05:40.000+08:00",
+        "type" : "culture"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "3",
+      "_score" : 0.05758412,
+      "_source" : {
+        "id" : 3,
+        "title" : "politic one",
+        "content" : "politic content and",
+        "modifyTime" : "2017-05-26T19:30:02.000+08:00",
+        "type" : "politic"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "1",
+      "_score" : 0.052132636,
+      "_source" : {
+        "id" : 1,
+        "title" : "economic one",
+        "content" : "this is economic xx content haha content",
+        "modifyTime" : "2017-05-26T19:05:34.000+08:00",
+        "type" : "economic"
+      }
+    } ]
+  }
+}
+
+当给定百分比的时候， minimum_should_match 会做合适的事情：在之前三词项的示例中， 75% 会自动被截断成 66.6% ，即三个里面两个词。无论这个值设置成什么，至少包含一个词项的文档才会被认为是匹配的。

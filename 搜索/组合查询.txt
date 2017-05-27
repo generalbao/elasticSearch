@@ -1,0 +1,174 @@
+数据是这样的
++----+--------------+------------------------------------------+---------------------+----------+
+| id | title        | content                                  | modifyTime          | type     |
++----+--------------+------------------------------------------+---------------------+----------+
+|  1 | economic one | this is economic xx content haha content | 2017-05-26 19:05:34 | economic |
+|  2 | culture one  | coulture content xx haha                 | 2017-05-26 19:05:40 | culture  |
+|  3 | politic one  | politic content and                      | 2017-05-26 19:30:02 | politic  |
+|  4 | politic 2    | politic 2 haha                           | 2017-05-26 19:28:37 | politic  |
+|  5 | economic 2   | content and                              | 2017-05-26 19:55:54 | economic |
++----+--------------+------------------------------------------+---------------------+----------+
+
+content 字段一定有content 不能有 xx 可以有也可以没有 politic
+curl http://localhost:9200/article-index/article-type/_search?pretty -d '
+{
+	"query":{
+	"bool" : {
+	"must":{
+	"match":{
+	"content":"content"
+	}	
+	},
+	"must_not":{
+	"match":{
+	"content":"xx"
+	}
+	}
+	,
+	"should":{
+	"match":{
+	"content":"polictic"
+	}
+	
+	}
+	}
+	}
+}
+
+{
+  "took" : 25,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 2,
+    "max_score" : 0.2169777,
+    "hits" : [ {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "3",
+      "_score" : 0.2169777,
+      "_source" : {
+        "id" : 3,
+        "title" : "politic one",
+        "content" : "politic content and",
+        "modifyTime" : "2017-05-26T19:30:02.000+08:00",
+        "type" : "politic"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "5",
+      "_score" : 0.028130025,
+      "_source" : {
+        "id" : 5,
+        "title" : "economic 2",
+        "content" : "content and",
+        "modifyTime" : "2017-05-26T19:55:54.000+08:00",
+        "type" : "economic"
+      }
+    } ]
+  }
+}
+
+结果id 3 5 都查找出来了 而且3的score比较大 因为有politic而5没有
+
+
+2222 通过boots指定权重 默认是1  content字段必须包含"content" 包含"xx"的权重为3 "politic"为2 所以 包含"content xx"排前 又因为id为2 的"coulture content xx haha"内容比id为1更短,所以排名第一
+curl http://localhost:9200/article-index/article-type/_search?pretty -d '
+{
+	"query":{
+	"bool" : {
+	"must":{
+	"match":{
+	"content":"content"
+	}	
+	},
+	
+	"should":[{
+	"match":{
+	"content":{
+             "query":"polictic",
+             "boost":2
+	}
+	}
+	},
+	{
+	"match":{
+	"content":{
+	"query":"xx",
+	"boost":3
+	}
+	}
+	
+	}]
+	}
+	}
+}
+'
+
+{
+  "took" : 17,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 5,
+    "successful" : 5,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : 4,
+    "max_score" : 0.28777507,
+    "hits" : [ {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "2",
+      "_score" : 0.28777507,
+      "_source" : {
+        "id" : 2,
+        "title" : "culture one",
+        "content" : "coulture content xx haha",
+        "modifyTime" : "2017-05-26T19:05:40.000+08:00",
+        "type" : "culture"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "1",
+      "_score" : 0.046743408,
+      "_source" : {
+        "id" : 1,
+        "title" : "economic one",
+        "content" : "this is economic xx content haha content",
+        "modifyTime" : "2017-05-26T19:05:34.000+08:00",
+        "type" : "economic"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "5",
+      "_score" : 0.00542101,
+      "_source" : {
+        "id" : 5,
+        "title" : "economic 2",
+        "content" : "content and",
+        "modifyTime" : "2017-05-26T19:55:54.000+08:00",
+        "type" : "economic"
+      }
+    }, {
+      "_index" : "article-index",
+      "_type" : "article-type",
+      "_id" : "3",
+      "_score" : 0.004336808,
+      "_source" : {
+        "id" : 3,
+        "title" : "politic one",
+        "content" : "politic content and",
+        "modifyTime" : "2017-05-26T19:30:02.000+08:00",
+        "type" : "politic"
+      }
+    } ]
+  }
+}
