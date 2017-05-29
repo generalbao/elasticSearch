@@ -1,0 +1,3 @@
+评分背后的理论
+
+https://www.elastic.co/guide/cn/elasticsearch/guide/current/scoring-theory.html
